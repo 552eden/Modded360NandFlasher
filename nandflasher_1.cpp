@@ -394,8 +394,7 @@ bool CheckGameMounted(std::string storageDevice) {
 			dprintf("\nfolder dosent exist! please restart wih existing folder!");
 			fclose(fd);
 			InfoBox(L"folder dosent exist! please restart wih existing folder!", L"Nand Flasher Error");
-			Sleep(10000);
-			Sleep(10000);
+			Sleep(100);
 			return false;
 		}
 		else
@@ -413,7 +412,7 @@ bool CheckGameMounted(std::string storageDevice) {
 			dprintf("Error! if you chose to use xex folder then use another option");
 			fclose(fd);
 			InfoBox(L"Error! if you chose to use xex folder then use another option", L"Nand Flasher Error");
-			Sleep(10000);
+			Sleep(100);
 			return false;
 		}
 		else
@@ -433,10 +432,11 @@ std::string getPathFromKeyboard()
     ZeroMemory(&Overlapped, sizeof(Overlapped));
     XShowKeyboardUI(0, VKBD_DEFAULT, L"", L"Nand Flasher", L"Please enter directory to read/write. Press B to use root of selected drive", GTTEXT, 512, &Overlapped);
     while (!XHasOverlappedIoCompleted(&Overlapped))
-		Sleep(100);
-    wcstombs(Buffer, GTTEXT, 512);
-    
-	return Buffer;
+		Sleep(1000);
+    //wcstombs(Buffer, GTTEXT, 512);
+    std::wstring ws(GTTEXT);
+	std::string rtn( ws.begin(), ws.end() );
+	return rtn;
     
 }
 
@@ -489,11 +489,28 @@ VOID __cdecl main()
 	std::string stringMountLocation = storageDevice + subFolder;
 	mountLocation = const_cast<char*>(stringMountLocation.c_str());
 	
-	if (!CheckGameMounted(storageDevice))
+	try
 	{
-		return;
+		if (!CheckGameMounted(storageDevice))
+		{
+			return;
+		}
 	}
-	write = fexists("game:\\updflash.bin");
+	catch (const std::exception& e)
+	{
+		dprintf("exception caught\n\n");
+	}
+
+	try
+	{
+		write = fexists("game:\\updflash.bin");
+	}
+	catch (const std::exception& e)
+	{
+		dprintf("exception caught\n\n");
+	}
+	
+	
 
 	
 #ifdef TRANSLATION_BY
