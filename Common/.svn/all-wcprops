@@ -1,0 +1,629 @@
+K 25
+svn:wc:ra_dav:version-url
+V 28
+/svn/!svn/ver/2/trunk/Common
+END
+AtgUtil.h
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/!svn/ver/2/trunk/Common/AtgUtil.h
+END
+AtgXmlParser.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/2/trunk/Common/AtgXmlParser.h
+END
+AtgNuiVisualization.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/2/trunk/Common/AtgNuiVisualization.h
+END
+AtgEnumStrings.h
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/2/trunk/Common/AtgEnumStrings.h
+END
+AtgSessionManager.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/2/trunk/Common/AtgSessionManager.h
+END
+AtgApp.h
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/2/trunk/Common/AtgApp.h
+END
+AtgNamedTypedObject.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/2/trunk/Common/AtgNamedTypedObject.h
+END
+AtgDsp.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/2/trunk/Common/AtgDsp.cpp
+END
+AtgCamera.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/2/trunk/Common/AtgCamera.cpp
+END
+AtgPostProcess.h
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/2/trunk/Common/AtgPostProcess.h
+END
+AtgFrame.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/2/trunk/Common/AtgFrame.cpp
+END
+AtgCollision.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/2/trunk/Common/AtgCollision.cpp
+END
+XTLOnPC.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/2/trunk/Common/XTLOnPC.cpp
+END
+AtgMesh.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/2/trunk/Common/AtgMesh.cpp
+END
+stdafx.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/2/trunk/Common/stdafx.cpp
+END
+AtgScene.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/2/trunk/Common/AtgScene.cpp
+END
+AtgWavebank.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/!svn/ver/2/trunk/Common/AtgWavebank.cpp
+END
+AtgNuiCommon.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/2/trunk/Common/AtgNuiCommon.cpp
+END
+AtgDebugDraw.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/2/trunk/Common/AtgDebugDraw.cpp
+END
+AtgDevice.h
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/2/trunk/Common/AtgDevice.h
+END
+AtgBound.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/2/trunk/Common/AtgBound.cpp
+END
+AtgLight.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/2/trunk/Common/AtgLight.cpp
+END
+AtgXime.h
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/!svn/ver/2/trunk/Common/AtgXime.h
+END
+AtgSceneFileParser.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/2/trunk/Common/AtgSceneFileParser.cpp
+END
+AtgSceneMesh.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/2/trunk/Common/AtgSceneMesh.cpp
+END
+AtgFrameworkWin322008.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/2/trunk/Common/AtgFrameworkWin322008.vcproj
+END
+AtgResourceDatabase.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/2/trunk/Common/AtgResourceDatabase.cpp
+END
+AtgNuiVisualization.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/2/trunk/Common/AtgNuiVisualization.cpp
+END
+AtgXmlParser.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/2/trunk/Common/AtgXmlParser.cpp
+END
+AtgUtil.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/2/trunk/Common/AtgUtil.cpp
+END
+AtgNamedTypedObject.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/2/trunk/Common/AtgNamedTypedObject.cpp
+END
+AtgMaterials.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/2/trunk/Common/AtgMaterials.h
+END
+AtgDsp.h
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/2/trunk/Common/AtgDsp.h
+END
+AtgCamera.h
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/2/trunk/Common/AtgCamera.h
+END
+AtgDevice.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/2/trunk/Common/AtgDevice.cpp
+END
+AtgFrame.h
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/2/trunk/Common/AtgFrame.h
+END
+AtgModel.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/2/trunk/Common/AtgModel.cpp
+END
+AtgMesh.h
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/!svn/ver/2/trunk/Common/AtgMesh.h
+END
+AtgWavebank.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/2/trunk/Common/AtgWavebank.h
+END
+AtgSkeletalAnimation.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/2/trunk/Common/AtgSkeletalAnimation.cpp
+END
+AtgMediaLocator.h
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/2/trunk/Common/AtgMediaLocator.h
+END
+AtgNuiCommon.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/2/trunk/Common/AtgNuiCommon.h
+END
+AtgDebugDraw.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/2/trunk/Common/AtgDebugDraw.h
+END
+AtgSceneMesh.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/2/trunk/Common/AtgSceneMesh.h
+END
+AtgSceneFileParser.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/2/trunk/Common/AtgSceneFileParser.h
+END
+AtgMaterials.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/2/trunk/Common/AtgMaterials.cpp
+END
+AtgResourceDatabase.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/2/trunk/Common/AtgResourceDatabase.h
+END
+AtgAnimation.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/2/trunk/Common/AtgAnimation.h
+END
+AtgMetaVMX.h
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/2/trunk/Common/AtgMetaVMX.h
+END
+AtgHelp.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/2/trunk/Common/AtgHelp.cpp
+END
+AtgSceneAll.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/2/trunk/Common/AtgSceneAll.h
+END
+AtgMeta.h
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/!svn/ver/2/trunk/Common/AtgMeta.h
+END
+AtgNuiJointConverter.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/2/trunk/Common/AtgNuiJointConverter.h
+END
+AtgSignIn.h
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/2/trunk/Common/AtgSignIn.h
+END
+AtgResource.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/2/trunk/Common/AtgResource.h
+END
+AtgJointFilter.h
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/2/trunk/Common/AtgJointFilter.h
+END
+.rights
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svn/!svn/ver/2/trunk/Common/.rights
+END
+AtgConsole.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/2/trunk/Common/AtgConsole.cpp
+END
+AtgXmlWriter.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/2/trunk/Common/AtgXmlWriter.h
+END
+AtgMediaLocator.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/2/trunk/Common/AtgMediaLocator.cpp
+END
+AtgInput.h
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/2/trunk/Common/AtgInput.h
+END
+AtgModel.h
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/2/trunk/Common/AtgModel.h
+END
+AtgFont.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/2/trunk/Common/AtgFont.cpp
+END
+AtgAudio.h
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/2/trunk/Common/AtgAudio.h
+END
+AtgSimpleShaders.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/2/trunk/Common/AtgSimpleShaders.h
+END
+AtgSpectralDisplay.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/2/trunk/Common/AtgSpectralDisplay.h
+END
+AtgNuiHandRefinement.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/2/trunk/Common/AtgNuiHandRefinement.h
+END
+AtgFramework2010.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/2/trunk/Common/AtgFramework2010.vcxproj
+END
+AtgSkeletalAnimation.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/2/trunk/Common/AtgSkeletalAnimation.h
+END
+AtgAvatarRenderer.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/2/trunk/Common/AtgAvatarRenderer.h
+END
+AtgEnumStrings.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/2/trunk/Common/AtgEnumStrings.cpp
+END
+AtgSessionManager.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/2/trunk/Common/AtgSessionManager.cpp
+END
+AtgAnimation.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/2/trunk/Common/AtgAnimation.cpp
+END
+AtgFramework2010.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/2/trunk/Common/AtgFramework2010.vcxproj.filters
+END
+AtgApp.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/2/trunk/Common/AtgApp.cpp
+END
+AtgPostProcess.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/2/trunk/Common/AtgPostProcess.cpp
+END
+AtgFramework2010.vcxproj.user
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/2/trunk/Common/AtgFramework2010.vcxproj.user
+END
+AtgResource.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/!svn/ver/2/trunk/Common/AtgResource.cpp
+END
+AtgSignIn.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/2/trunk/Common/AtgSignIn.cpp
+END
+AtgNuiJointConverter.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/2/trunk/Common/AtgNuiJointConverter.cpp
+END
+AtgFramework2008.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/2/trunk/Common/AtgFramework2008.vcproj
+END
+AtgJointFilter.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/2/trunk/Common/AtgJointFilter.cpp
+END
+AtgFrameworkWin322010.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/2/trunk/Common/AtgFrameworkWin322010.vcxproj
+END
+AtgXmlWriter.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/2/trunk/Common/AtgXmlWriter.cpp
+END
+AtgHelp.h
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/!svn/ver/2/trunk/Common/AtgHelp.h
+END
+AtgInput.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/2/trunk/Common/AtgInput.cpp
+END
+XTLOnPC.h
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/!svn/ver/2/trunk/Common/XTLOnPC.h
+END
+AtgCollision.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/2/trunk/Common/AtgCollision.h
+END
+AtgVer.h
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/2/trunk/Common/AtgVer.h
+END
+AtgAudio.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/2/trunk/Common/AtgAudio.cpp
+END
+AtgScene.h
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/2/trunk/Common/AtgScene.h
+END
+stdafx.h
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/2/trunk/Common/stdafx.h
+END
+AtgXime.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/2/trunk/Common/AtgXime.cpp
+END
+AtgSpectralDisplay.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/2/trunk/Common/AtgSpectralDisplay.cpp
+END
+AtgSimpleShaders.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/2/trunk/Common/AtgSimpleShaders.cpp
+END
+AtgFrameworkWin322010.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/2/trunk/Common/AtgFrameworkWin322010.vcxproj.filters
+END
+AtgNuiHandRefinement.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/2/trunk/Common/AtgNuiHandRefinement.cpp
+END
+AtgAvatarRenderer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/2/trunk/Common/AtgAvatarRenderer.cpp
+END
+AtgConsole.h
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/2/trunk/Common/AtgConsole.h
+END
+AtgFont.h
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/svn/!svn/ver/2/trunk/Common/AtgFont.h
+END
+AtgLight.h
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/2/trunk/Common/AtgLight.h
+END
+AtgBound.h
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/2/trunk/Common/AtgBound.h
+END
+AtgLockFreePipe.h
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/2/trunk/Common/AtgLockFreePipe.h
+END
+AtgApobase.h
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/2/trunk/Common/AtgApobase.h
+END
