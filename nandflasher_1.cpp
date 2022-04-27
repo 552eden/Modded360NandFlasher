@@ -451,8 +451,9 @@ VOID __cdecl main()
 	// Initialize the console window
 	MakeConsole("embed:\\font", CONSOLE_COLOR_BLACK, CONSOLE_COLOR_GREEN);
 	std::string storageDevice;
-	dprintf("to find out which usb you need to use, use XEX menu. this app will be able to detect it in a future release\n");
-	dprintf("Press A to use HDD, B for USB0, X for USB1 or Y to use XEX folder");
+	dprintf("Welcome to Modded360nandflasher. a mod for Simple360nandflasher which adds folder choice option!\n\n");
+	dprintf("To find out which usb option to select, use XEX menu. this app will be able to detect it in a future release\n");
+	dprintf("Press A to use HDD, B for USB0, X for USB1 or Y to use XEX folder\n");
 	dprintf("On the next screen you will need to pick a folder to use. please make sure the folder exists!");
 	for(;;)
 	{
