@@ -12,7 +12,9 @@
 *.la
 *.a
 /Simple 360 NAND Flasher/Release_LTCG/
-/Release_LTCG/
+common/Release_LTCG/
+
+/common/Release_LTCG/
 /Release*/
 /Release
 /Release/
