@@ -392,7 +392,6 @@ bool CheckGameMounted(std::string storageDevice) {
 		if (fopen_s(&fd, "game:\\test.tmp", "w") != 0)
 		{
 			dprintf("\nfolder dosent exist! please restart wih existing folder!");
-			fclose(fd);
 			InfoBox(L"folder dosent exist! please restart wih existing folder!", L"Nand Flasher Error");
 			Sleep(100);
 			return false;
@@ -410,7 +409,6 @@ bool CheckGameMounted(std::string storageDevice) {
 		if (fopen_s(&fd, "game:\\test.tmp", "w") != 0)
 		{
 			dprintf("Error! if you chose to use xex folder then use another option");
-			fclose(fd);
 			InfoBox(L"Error! if you chose to use xex folder then use another option", L"Nand Flasher Error");
 			Sleep(100);
 			return false;
