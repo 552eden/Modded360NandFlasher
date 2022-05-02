@@ -391,8 +391,8 @@ bool CheckGameMounted(std::string storageDevice) {
 		//rerouter
 		if (fopen_s(&fd, "game:\\test.tmp", "w") != 0)
 		{
-			dprintf("\nfolder dosent exist! please restart wih existing folder!");
-			InfoBox(L"folder dosent exist! please restart wih existing folder!", L"Nand Flasher Error");
+			dprintf("\nfolder dosent exist! please restart wih a folder that exists!");
+			InfoBox(L"folder dosent exist! please restart wih a folder that exists!", L"Nand Flasher Error");
 			Sleep(100);
 			return false;
 		}
@@ -428,7 +428,7 @@ std::string getPathFromKeyboard()
     WCHAR GTTEXT[512];
     char Buffer[512];
     ZeroMemory(&Overlapped, sizeof(Overlapped));
-    XShowKeyboardUI(0, VKBD_DEFAULT, L"", L"Nand Flasher", L"Please enter directory to read/write. Press B to use root of selected drive", GTTEXT, 512, &Overlapped);
+    XShowKeyboardUI(0, VKBD_DEFAULT, L"", L"Nand Flasher", L"Please enter directory to read/write. For subfolders use backslash(\\). Press B to use root of selected drive", GTTEXT, 512, &Overlapped);
     while (!XHasOverlappedIoCompleted(&Overlapped))
 		Sleep(1000);
     //wcstombs(Buffer, GTTEXT, 512);
@@ -486,27 +486,14 @@ VOID __cdecl main()
 	std::string subFolder =  getPathFromKeyboard();
 	std::string stringMountLocation = storageDevice + subFolder;
 	mountLocation = const_cast<char*>(stringMountLocation.c_str());
-	
-	try
+
+	if (!CheckGameMounted(storageDevice))
 	{
-		if (!CheckGameMounted(storageDevice))
-		{
-			return;
-		}
-	}
-	catch (const std::exception& e)
-	{
-		dprintf("exception caught\n\n");
+		return;
 	}
 
-	try
-	{
-		write = fexists("game:\\updflash.bin");
-	}
-	catch (const std::exception& e)
-	{
-		dprintf("exception caught\n\n");
-	}
+	write = fexists("game:\\updflash.bin");
+	
 	
 	
 
