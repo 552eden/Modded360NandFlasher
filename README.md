@@ -1,4 +1,4 @@
-This is a mod of "Simple 360 Nand Flasher" by Swizzy
+This is a mod of "Simple 360 Nand Flasher" by Swizzy - Original code can be found here: https://github.com/Swizzy/XDK_Projects/tree/master/Simple%20360%20NAND%20Flasher
 
 this mod's goals are to add an option to pick where to read or wtire the nand files from\to
 
