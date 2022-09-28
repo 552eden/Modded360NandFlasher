@@ -26,3 +26,9 @@ Release/
 Atg*
 *atg
 *.bat
+
+# Per user/generated files
+*.user
+*.suo
+*.sdf
+.vs
