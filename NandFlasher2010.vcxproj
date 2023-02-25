@@ -94,6 +94,7 @@
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
     <ImageXexOutput>$(OutDir)Default.xex</ImageXexOutput>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release_English|Xbox 360'">$(Xbox360TechPreviewInclude);$(XDKInstallDir)\include\xbox;C:\Program Files (x86)\Windows Kits\10\Include;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_English|Xbox 360'">
     <ClCompile>

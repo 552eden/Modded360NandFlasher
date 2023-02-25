@@ -1,3 +1,4 @@
+#include <Xtl.h>
 #include "OutputConsole.h"
 #include "AtgConsole.h"
 #include "AtgInput.h"
@@ -10,6 +11,9 @@
 #include <vector>
 #include <string>
 #include "AtgSignIn.h"
+#include "ws-util.h"
+#include <stdlib.h>
+#include <iostream>
 
 extern "C" {
 #include "xenon_sfcx.h"
@@ -17,6 +21,22 @@ extern "C" {
 
 #pragma comment(lib, "xav")
 #pragma comment(lib, "xapilib")
+#pragma comment(lib,"Xnet.lib")
+#include <winsockX.h>
+#include <xbox.h>
+#include <fstream>
+#include <iostream>
+
+#pragma comment(lib, "xboxkrnl.lib")
+//#pragma comment(lib, "ws2_32.lib")
+
+//#define SERVER_IP "10.100.102.18" // change this to the actual IP address of the server
+#define SERVER_PORT 4343 // change this to the actual port number used by the server
+#define FILENAME "game:\\flashdmp.bin"
+#define SENTFILENAME "flashdmp.bin"
+#define BUFFER_SIZE 4096
+
+
 
 extern "C" NTSTATUS XeKeysGetKey(WORD KeyId, PVOID KeyBuffer, PDWORD keyLength);
 
@@ -50,6 +70,7 @@ PMESSAGEBOX_RESULT result = new MESSAGEBOX_RESULT();
 
 char* subFolderChar;
 char* mountLocation;
+char* serverIp;
 //char* subFolder = "";
 //char* mountLocation = "\\Device\\Harddisk0\\Partition1\\";
 
@@ -236,6 +257,18 @@ VOID flasher()
 	dprintf(MSG_BYE);
 	HalReturnToFirmware(2);
 }
+
+
+//---------------------- start network functionality ----------------------------
+unsigned int computeChecksum(char* buffer, int length) {
+    unsigned int checksum = 0;
+    for (int i = 0; i < length; i++) {
+        checksum += buffer[i];
+    }
+    return checksum;
+}
+
+// -------------------- END NETWORK FUNCTIONSLITY----------------
 
 VOID dumper(char *filename)
 {
@@ -460,6 +493,21 @@ std::string getPathFromKeyboard()
     
 }
 
+std::string getIPFromKeyboard()
+{
+    XOVERLAPPED Overlapped;
+    WCHAR GTTEXT[512];
+    char Buffer[512];
+    ZeroMemory(&Overlapped, sizeof(Overlapped));
+    XShowKeyboardUI(0, VKBD_DEFAULT, L"", L"Nand Flasher", L"ENTER PC SERVER IP (EG. 192.168.1.12)", GTTEXT, 512, &Overlapped);
+    while (!XHasOverlappedIoCompleted(&Overlapped))
+		Sleep(1000);
+    std::wstring ws(GTTEXT);
+	std::string rtn( ws.begin(), ws.end() );
+	return rtn;
+    
+}
+
 
 VOID ShowMessageBoxUI() //shows drive selector message box
 {
@@ -506,7 +554,15 @@ VOID ShowMessageBoxUISubFol()//shows sub folder message box
 }
 
 
+//---------------------- network functionality -------------------
 
+
+//// Constants /////////////////////////////////////////////////////////
+
+// Default port to connect to on the server
+const int kDefaultServerPort = 4242;
+
+//---------------------- end network functionality ---------------
 
 //--------------------------------------------------------------------------------------
 // Name: main()
@@ -684,10 +740,14 @@ VOID __cdecl main()
 		}
 	}
 	if (!MMC)
+	{
 		dprintf(MSG_PRESS_X_TO_DUMP_RAWFLASH);
+		dprintf("\npress select to use network beta\n");
+	}
 	else
 		dprintf(MSG_PRESS_X_TO_DUMP_RAWFLASH4G);
 	dprintf(MSG_PRESS_ANY_OTHER_BUTTON_TO_EXIT);
+	
 	for(;;)
 	{
 		m_pGamepad = ATG::Input::GetMergedInput();
@@ -752,7 +812,148 @@ VOID __cdecl main()
 					}
 				}
 				dprintf(MSG_PRESS_ANY_BUTTON_TO_EXIT);
+				dprintf("\npress select to use network beta\n");
 			}
+			else if ((m_pGamepad->wPressedButtons & XINPUT_GAMEPAD_BACK) && (!dumped)) //network func button
+			{
+				dprintf("network beta activated \î");
+
+				//disable secure network settings. long live unsecure connections!
+				XNetStartupParams xnsp;
+				memset( &xnsp, 0, sizeof( xnsp ) );
+				xnsp.cfgSizeOfStruct = sizeof( XNetStartupParams );
+				xnsp.cfgFlags = XNET_STARTUP_BYPASS_SECURITY;
+				INT err = XNetStartup( &xnsp );
+				std::string ipStr = getIPFromKeyboard();
+				serverIp = const_cast<char*>(ipStr.c_str());
+				//dprintf("\n server IP is: ", serverIp, "\n");
+				// Initialize WinsockX
+				WSADATA wsaData;
+				int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+				if (result != 0) {
+					printf("WSAStartup failed with error: %d\n", result);
+					//return 1;
+				}
+
+				// Create a socket
+				SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+				if (sock == INVALID_SOCKET) {
+					dprintf("socket creation failed with error: %d\n", WSAGetLastError());
+					WSACleanup();
+					//return 1;
+				}
+				else
+				{
+					dprintf("Socket created successfully!\n");
+				}
+
+				// Connect to the server
+				SOCKADDR_IN target;
+				target.sin_family = AF_INET;
+				target.sin_port = htons(SERVER_PORT);
+				target.sin_addr.s_addr = inet_addr(serverIp);
+				result = connect(sock, (SOCKADDR*)&target, sizeof(target));
+				if (result == SOCKET_ERROR) {
+					printf("connect failed with error: %d\n", WSAGetLastError());
+					closesocket(sock);
+					WSACleanup();
+					//return 1;
+				}
+				else
+				{
+					dprintf("Connected to PC server!\n");
+				}
+
+				printf("Connected to server %s:%d\n", serverIp, SERVER_PORT);
+
+				// Send the name of the binary file to receive
+				result = send(sock, SENTFILENAME, strlen(SENTFILENAME), 0);
+				if (result == SOCKET_ERROR) {
+					printf("send failed with error: %d\n", WSAGetLastError());
+					closesocket(sock);
+					WSACleanup();
+					//return 1;
+				}
+
+				// Receive the expected file size
+				char sizeBuffer[1024];
+				result = recv(sock, sizeBuffer, 1024, 0);
+				//dprintf("recieved file size from server is:",result);
+				if (result == SOCKET_ERROR) {
+					printf("recv failed with error: %d\n", WSAGetLastError());
+					closesocket(sock);
+					WSACleanup();
+					//return 1;
+				}
+				sizeBuffer[result] = '\0';
+				long long expectedFileSize = _atoi64(sizeBuffer);
+				printf("Expected file size: %lld\n", expectedFileSize);
+
+				// Open the file for writing
+				std::ofstream outputFile(FILENAME, std::ios::out | std::ios::binary);
+				if (!outputFile.is_open()) {
+					dprintf("Failed to create file %s\n", FILENAME);
+					closesocket(sock);
+					WSACleanup();
+					//return 1;
+				}
+
+				// Receive the file and compute the checksum
+				char buffer[BUFFER_SIZE];
+				unsigned int checksum = 0;
+				int bytesRead;
+				long long totalBytesRead = 0;
+				while (totalBytesRead < expectedFileSize) {
+					bytesRead = recv(sock, buffer, BUFFER_SIZE, 0);
+					if (bytesRead <= 0) {
+						break;
+					}
+					outputFile.write(buffer, bytesRead);
+					checksum += computeChecksum(buffer, bytesRead);
+					totalBytesRead += bytesRead;
+				}
+
+				// Check for errors
+				if (bytesRead == SOCKET_ERROR) {
+					printf("recv failed with error: %d\n", WSAGetLastError());
+				}
+				else {
+					dprintf("\nFile received successfully\n");
+					dprintf("File received successfully\n");
+					dprintf("File received successfully\n");
+					/*
+					if (expectedFileSize != totalBytesRead) {
+						printf("Received file size %lld is different from expected file size %lld\n", totalBytesRead, expectedFileSize);
+					}
+					else {
+						// Compare the expected checksum to the actual checksum
+						if (checksum == expectedChecksum) {
+							printf("Checksums match, file received successfully\n");
+						}
+						else {
+							printf("Checksums do not match, file may be corrupted\n");
+						}
+					}*/
+				}
+
+
+				// Close the file, socket and cleanup WinsockX
+				outputFile.close();
+
+
+				closesocket(sock);
+				WSACleanup();
+				dprintf("\n network func completed!!\n");
+				dprintf("network func completed!!\n");
+				dprintf("network func completed!!\n");
+				dprintf("network func completed!!\n");
+
+
+				
+			}
+
+
+			
 			else if (m_pGamepad->wPressedButtons) { break; }
 		}
 		else if ((m_pGamepad->wPressedButtons) && (dumped)) { break; }
