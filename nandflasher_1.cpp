@@ -11,13 +11,25 @@
 #include <vector>
 #include <string>
 #include "AtgSignIn.h"
-#include "ws-util.h"
+#include <cstdint>
 #include <stdlib.h>
 #include <iostream>
+#include <xtl.h>
+#include <cstdio>
+#include <vector>
+#include <cstdint>
+#include <vector>
+#include <cstring>
+#include "sha256.h"
+#include "md5.h"
 
+#include <fstream>
 extern "C" {
 #include "xenon_sfcx.h"
 }
+
+//#include "XeCrypt.h"
+//#pragma comment(lib, "XeCrypt.lib")
 
 #pragma comment(lib, "xav")
 #pragma comment(lib, "xapilib")
@@ -26,7 +38,7 @@ extern "C" {
 #include <xbox.h>
 #include <fstream>
 #include <iostream>
-
+#include <iomanip> 
 #pragma comment(lib, "xboxkrnl.lib")
 //#pragma comment(lib, "ws2_32.lib")
 
@@ -35,7 +47,7 @@ extern "C" {
 #define FILENAME "game:\\flashdmp.bin"
 #define SENTFILENAME "flashdmp.bin"
 #define BUFFER_SIZE 4096
-
+#define __BYTE_ORDER __BIG_ENDIAN
 
 
 extern "C" NTSTATUS XeKeysGetKey(WORD KeyId, PVOID KeyBuffer, PDWORD keyLength);
@@ -268,6 +280,44 @@ unsigned int computeChecksum(char* buffer, int length) {
     return checksum;
 }
 
+
+
+std::string calculateMD5(const std::string& filePath)
+{
+    // Open the file
+    FILE* file = fopen(filePath.c_str(), "rb");
+    if (!file)
+    {
+        // Handle error, file couldn't be opened
+        return "";
+    }
+
+    // Initialize MD5 hasher
+    MD5 md5;
+
+    // Buffer to read file contents
+    const int bufferSize = 8192; // You can adjust buffer size as needed
+    char buffer[bufferSize];
+
+    // Read file contents and update MD5 hasher
+    while (!feof(file))
+    {
+        size_t bytesRead = fread(buffer, 1, bufferSize, file);
+        md5.add(buffer, bytesRead);
+    }
+
+    // Close the file
+    fclose(file);
+
+    // Get the MD5 hash as a hexadecimal string
+    std::string md5Hash = md5.getHash();
+
+    return md5Hash;
+}
+
+
+
+
 // -------------------- END NETWORK FUNCTIONSLITY----------------
 
 VOID dumper(char *filename)
@@ -499,7 +549,7 @@ std::string getIPFromKeyboard()
     WCHAR GTTEXT[512];
     char Buffer[512];
     ZeroMemory(&Overlapped, sizeof(Overlapped));
-    XShowKeyboardUI(0, VKBD_DEFAULT, L"", L"Nand Flasher", L"ENTER PC SERVER IP (EG. 192.168.1.12)", GTTEXT, 512, &Overlapped);
+    XShowKeyboardUI(0, VKBD_DEFAULT, L"192.168.137.1", L"Nand Flasher", L"ENTER PC SERVER IP (EG. 192.168.1.12)", GTTEXT, 512, &Overlapped);
     while (!XHasOverlappedIoCompleted(&Overlapped))
 		Sleep(1000);
     std::wstring ws(GTTEXT);
@@ -816,7 +866,7 @@ VOID __cdecl main()
 			}
 			else if ((m_pGamepad->wPressedButtons & XINPUT_GAMEPAD_BACK) && (!dumped)) //network func button
 			{
-				dprintf("network beta activated \î");
+				dprintf("network beta activated \n");
 
 				//disable secure network settings. long live unsecure connections!
 				XNetStartupParams xnsp;
@@ -909,37 +959,75 @@ VOID __cdecl main()
 						break;
 					}
 					outputFile.write(buffer, bytesRead);
-					checksum += computeChecksum(buffer, bytesRead);
+					//checksum += computeChecksum(buffer, bytesRead);
 					totalBytesRead += bytesRead;
+
+					
+
 				}
 
 				// Check for errors
 				if (bytesRead == SOCKET_ERROR) {
 					printf("recv failed with error: %d\n", WSAGetLastError());
+
 				}
 				else {
 					dprintf("\nFile received successfully\n");
 					dprintf("File received successfully\n");
 					dprintf("File received successfully\n");
-					/*
+					
 					if (expectedFileSize != totalBytesRead) {
 						printf("Received file size %lld is different from expected file size %lld\n", totalBytesRead, expectedFileSize);
 					}
 					else {
-						// Compare the expected checksum to the actual checksum
-						if (checksum == expectedChecksum) {
-							printf("Checksums match, file received successfully\n");
+						outputFile.close();
+						std::string filePath = FILENAME;
+						std::string md5Hash = calculateMD5(filePath);
+						if (!md5Hash.empty())
+						{
+							dprintf("MD5 Hash: %s\n", md5Hash.c_str());
 						}
-						else {
-							printf("Checksums do not match, file may be corrupted\n");
+						else
+						{
+							dprintf("\n error calculating md5");
 						}
-					}*/
+						// Receive the expected file size
+						char stringBuffer[1024];
+						result = recv(sock, stringBuffer, 1024, 0);
+						//dprintf("recieved file size from server is:",result);
+						if (result == SOCKET_ERROR) {
+							printf("recv failed with error: %d\n", WSAGetLastError());
+							closesocket(sock);
+							WSACleanup();
+							//return 1;
+						}
+						stringBuffer[result] = '\0';
+						long long expectedFileSize = _atoi64(stringBuffer);
+						printf("Expected file size: %lld\n", expectedFileSize);
+						dprintf("\n Received MD5:", stringBuffer);
+						dprintf(stringBuffer);
+
+						
+
+						int strResult = std::strcmp(stringBuffer, md5Hash.c_str());
+
+						if (strResult == 0) {
+							dprintf("\nHashses are the same! you can continue with flashing\n");
+						} else {
+							dprintf("\nHash Mismatch ***DO NOT FLASH FILE***\n");
+						}
+
+						
+							
+
+					}
 				}
+
+				
 
 
 				// Close the file, socket and cleanup WinsockX
-				outputFile.close();
-
+			
 
 				closesocket(sock);
 				WSACleanup();

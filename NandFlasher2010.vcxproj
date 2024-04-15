@@ -121,13 +121,14 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/ignore:4089  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>xapilib.lib;vcomp.lib;d3d9ltcg.lib;d3dx9.lib;xgraphics.lib;xapilib.lib;xaudio2.lib;x3daudioltcg.lib;xmcoreltcg.lib;xboxkrnl.lib;xbdm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>xapilib.lib;vcomp.lib;d3d9ltcg.lib;d3dx9.lib;xgraphics.lib;xaudio2.lib;x3daudioltcg.lib;xmcoreltcg.lib;xboxkrnl.lib;xbdm.lib;xecrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <ShowProgress>LinkVerbose</ShowProgress>
+      <AdditionalLibraryDirectories>F:\Development\Xbox 360\Projects\latest modded360nandflasher\XeCrypt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -372,6 +373,7 @@
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ClCompile Include="keyextract.cpp" />
+    <ClCompile Include="md5.cpp" />
     <ClCompile Include="nandflasher_1.cpp" />
     <ClCompile Include="OutputConsole.cpp" />
     <ClCompile Include="xenon_sfcx.c">
@@ -393,6 +395,7 @@
     <ClInclude Include="Corona4G.h" />
     <ClInclude Include="keyextract.h" />
     <ClInclude Include="Language.h" />
+    <ClInclude Include="md5.h" />
     <ClInclude Include="OutputConsole.h" />
     <ClInclude Include="Translations\Default.h" />
     <ClInclude Include="Translations\German.h" />
