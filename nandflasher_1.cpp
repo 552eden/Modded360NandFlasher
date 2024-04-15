@@ -20,7 +20,6 @@
 #include <cstdint>
 #include <vector>
 #include <cstring>
-#include "sha256.h"
 #include "md5.h"
 
 #include <fstream>
