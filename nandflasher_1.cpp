@@ -27,8 +27,7 @@ extern "C" {
 #include "xenon_sfcx.h"
 }
 
-//#include "XeCrypt.h"
-//#pragma comment(lib, "XeCrypt.lib")
+
 
 #pragma comment(lib, "xav")
 #pragma comment(lib, "xapilib")
@@ -39,10 +38,9 @@ extern "C" {
 #include <iostream>
 #include <iomanip> 
 #pragma comment(lib, "xboxkrnl.lib")
-//#pragma comment(lib, "ws2_32.lib")
 
-//#define SERVER_IP "10.100.102.18" // change this to the actual IP address of the server
-#define SERVER_PORT 4343 // change this to the actual port number used by the server
+
+#define SERVER_PORT 4343 // For pc server support
 #define FILENAME "game:\\flashdmp.bin"
 #define SENTFILENAME "flashdmp.bin"
 #define BUFFER_SIZE 4096
@@ -61,8 +59,15 @@ XOVERLAPPED m_Overlapped;               // Overlapped object for message box UI
 WCHAR           m_wstrMessage[256];         // Message box result message
 MESSAGEBOX_RESULT m_Result; 
 MESSAGEBOX_RESULT k_Result;// Message box button pressed result for sub folder detection
-BOOL m_bMessageBoxShowing;
-BOOL k_bMessageBoxShowing;
+BOOL m_bMessageBoxShowing; // is the drive picker messagebox showing?
+BOOL k_bMessageBoxShowing; // is the subfolder question messagebox showing?
+
+BOOL activateMod = false;
+
+MESSAGEBOX_RESULT q_Result;// Message box button pressed result for change folder mod activation 
+BOOL q_bMessageBoxShowing; // is the change folder mod activation  messagebox showing?
+
+
 int deviceIndex;							//device chosen from message box. 0 = HDD, 1 = USB0 2 = USB1 
 int subFolBool;								//use sub folder flag. 0 use 1 dont use
 LPCWSTR g_pwstrButtons[3] =
@@ -72,6 +77,11 @@ LPCWSTR g_pwstrButtons[3] =
 LPCWSTR g_pwstrSubFolButtons[2] =
 {
     L"Use sub folders", L"Dont use sub folders"
+};
+
+LPCWSTR q_pwstrModButtons[2] =
+{
+    L"Change Location", L"Dont Chamge location (Default)"
 };
 
 
@@ -271,13 +281,16 @@ VOID flasher()
 
 
 //---------------------- start network functionality ----------------------------
+
+//unused checksum, calculation?
+/*
 unsigned int computeChecksum(char* buffer, int length) {
     unsigned int checksum = 0;
     for (int i = 0; i < length; i++) {
         checksum += buffer[i];
     }
     return checksum;
-}
+}*/
 
 
 
@@ -486,6 +499,7 @@ void InfoBox(LPCWSTR Text, LPCWSTR Caption) {
 }
 
 
+//check if we successfully mounted folder
 bool CheckGameMounted(std::string storageDevice) {
 	if(storageDevice != "game")
 	{
@@ -526,7 +540,7 @@ bool CheckGameMounted(std::string storageDevice) {
 	
 }
 
-
+//prompt user for subfolder path using xbox keyboard
 std::string getPathFromKeyboard()
 {
     XOVERLAPPED Overlapped;
@@ -542,6 +556,7 @@ std::string getPathFromKeyboard()
     
 }
 
+//prompt user for PC IP using xbox keyboard
 std::string getIPFromKeyboard()
 {
     XOVERLAPPED Overlapped;
@@ -591,7 +606,7 @@ VOID ShowMessageBoxUISubFol()//shows sub folder message box
                                L"Do you want to read/write using a subfolder? (Make sure the folder exists!)",  // Message string
                                ARRAYSIZE( g_pwstrSubFolButtons ),// Number of buttons
 							   g_pwstrSubFolButtons,             // Button captions
-                               0,                          // Button that gets focus
+                               1,                          // Button that gets focus
 							   XMB_ALERTICON,              // Icon to display
                                &k_Result,                  // Button pressed result
                                &m_Overlapped );
@@ -599,6 +614,29 @@ VOID ShowMessageBoxUISubFol()//shows sub folder message box
     assert( dwRet == ERROR_IO_PENDING );
 
     k_bMessageBoxShowing = TRUE;
+    m_wstrMessage[0] = L'\0';
+}
+
+
+VOID ShowMessageBoxUIModActivation()//shows mod activation message box
+{
+    DWORD dwRet;
+
+    ZeroMemory( &m_Overlapped, sizeof( XOVERLAPPED ) );
+
+    dwRet = XShowMessageBoxUI( 0,
+                               L"Activate Mod?",                   // Message box title
+                               L"Do you want to chnage read write location? (Activate mod)",  // Message string
+                               ARRAYSIZE( q_pwstrModButtons ),// Number of buttons
+							   q_pwstrModButtons,             // Button captions
+                               1,                          // Button that gets focus
+							   XMB_ALERTICON,              // Icon to display
+                               &q_Result,                  // Button pressed result
+                               &m_Overlapped );
+
+    assert( dwRet == ERROR_IO_PENDING );
+
+    q_bMessageBoxShowing = TRUE;
     m_wstrMessage[0] = L'\0';
 }
 
@@ -624,8 +662,8 @@ VOID __cdecl main()
 	MakeConsole("embed:\\font", CONSOLE_COLOR_BLACK, CONSOLE_COLOR_GREEN);
 	std::string storageDevice;
 	Sleep(1000);
-	ShowMessageBoxUI();
-	while(m_bMessageBoxShowing)
+	ShowMessageBoxUIModActivation();
+	while(q_bMessageBoxShowing)
 	{
 		
 		while(!XHasOverlappedIoCompleted( &m_Overlapped ))//check if message box is closed yet
@@ -634,26 +672,62 @@ VOID __cdecl main()
 		}
 		 if( XHasOverlappedIoCompleted( &m_Overlapped ) )//message box ended
         {
-            m_bMessageBoxShowing = FALSE;
+            q_bMessageBoxShowing = FALSE;
             DWORD dwResult = XGetOverlappedResult( &m_Overlapped, NULL, TRUE );
             if( dwResult == ERROR_SUCCESS )
             {
-                deviceIndex = m_Result.dwButtonPressed;//remember which buttom was pressed
+                if(q_Result.dwButtonPressed == 0)
+					activateMod = true;
+				else
+					activateMod = false;
             }
             else if( dwResult == ERROR_CANCELLED )
             {
-                deviceIndex = 3;
+                activateMod = false;
 				dprintf("Messagebox cancelled, defaulting to XEX location");
             }
             else
             {
-                deviceIndex = 3;
+                activateMod = false;
 				dprintf("Messagebox error, defaulting to XEX location");
             }
 
         }
 	}
 	Sleep(1000);
+
+	if(activateMod) //change folder mod switch
+	{
+		ShowMessageBoxUI(); // ask user of he wants to change drive
+		while(m_bMessageBoxShowing)
+		{
+		
+			while(!XHasOverlappedIoCompleted( &m_Overlapped ))//check if message box is closed yet
+			{
+				Sleep(100);
+			}
+			 if( XHasOverlappedIoCompleted( &m_Overlapped ) )//message box ended
+			{
+				m_bMessageBoxShowing = FALSE;
+				DWORD dwResult = XGetOverlappedResult( &m_Overlapped, NULL, TRUE );
+				if( dwResult == ERROR_SUCCESS )
+				{
+					deviceIndex = m_Result.dwButtonPressed;//remember which buttom was pressed
+				}
+				else if( dwResult == ERROR_CANCELLED )
+				{
+					deviceIndex = 3;
+					dprintf("Messagebox cancelled, defaulting to XEX location");
+				}
+				else
+				{
+					deviceIndex = 3;
+					dprintf("Messagebox error, defaulting to XEX location");
+				}
+
+			}
+		}
+		Sleep(1000);
 
 
 
@@ -662,79 +736,91 @@ VOID __cdecl main()
 
 
 	
-	dprintf("Welcome to Modded360nandflasher. a mod for Simple360nandflasher which adds folder choice option!\n\n");
+		
 
-	if(deviceIndex == 0)
-	{
-		storageDevice = "\\Device\\Harddisk0\\Partition1\\";
-	}
-	else if(deviceIndex == 1)
-	{
-		storageDevice = "\\Device\\Mass0\\";
-	}
-	else if(deviceIndex == 2)
-	{
-		storageDevice = "\\Device\\Mass1\\";
+		if(deviceIndex == 0)
+		{
+			storageDevice = "\\Device\\Harddisk0\\Partition1\\";
+		}
+		else if(deviceIndex == 1)
+		{
+			storageDevice = "\\Device\\Mass0\\";
+		}
+		else if(deviceIndex == 2)
+		{
+			storageDevice = "\\Device\\Mass1\\";
+		}
+		else
+		{
+			deviceIndex = 3;
+			storageDevice = "game";
+		}
+
+		ShowMessageBoxUISubFol();//show sub folder question
+		Sleep(1000);
+		while(k_bMessageBoxShowing)
+		{
+		
+			while(!XHasOverlappedIoCompleted( &m_Overlapped ))
+			{
+			
+			}
+			 if( XHasOverlappedIoCompleted( &m_Overlapped ) )
+			{
+				k_bMessageBoxShowing = FALSE;
+				DWORD dwResult = XGetOverlappedResult( &m_Overlapped, NULL, TRUE );
+				if( dwResult == ERROR_SUCCESS )
+				{
+					subFolBool = k_Result.dwButtonPressed;
+				}
+				else if( dwResult == ERROR_CANCELLED )
+				{
+					subFolBool = 1;
+					dprintf("Messagebox cancelled, defaulting to XEX location");
+				}
+				else
+				{
+					subFolBool = 1;
+					dprintf("Messagebox error, defaulting to XEX location");
+				}
+
+			}
+		}
+		Sleep(1000);
+
+		if(subFolBool == 0)//if you want a sub folder
+		{
+			std::string subFolder =  getPathFromKeyboard();
+			std::string stringMountLocation = storageDevice + subFolder;
+			mountLocation = const_cast<char*>(stringMountLocation.c_str());
+		}
+		else
+		{
+		
+			mountLocation = const_cast<char*>(storageDevice.c_str());
+		}
+
+	
+	
+
+		if (!CheckGameMounted(storageDevice))//check if the folder even exists
+		{
+			return;
+		}
+
 	}
 	else
 	{
 		deviceIndex = 3;
 		storageDevice = "game";
-	}
-
-	ShowMessageBoxUISubFol();//show sub folder question
-	Sleep(1000);
-	while(k_bMessageBoxShowing)
-	{
-		
-		while(!XHasOverlappedIoCompleted( &m_Overlapped ))
-		{
-			
-		}
-		 if( XHasOverlappedIoCompleted( &m_Overlapped ) )
-        {
-            k_bMessageBoxShowing = FALSE;
-            DWORD dwResult = XGetOverlappedResult( &m_Overlapped, NULL, TRUE );
-            if( dwResult == ERROR_SUCCESS )
-            {
-				subFolBool = k_Result.dwButtonPressed;
-            }
-            else if( dwResult == ERROR_CANCELLED )
-            {
-				subFolBool = 1;
-				dprintf("Messagebox cancelled, defaulting to XEX location");
-            }
-            else
-            {
-                subFolBool = 1;
-				dprintf("Messagebox error, defaulting to XEX location");
-            }
-
-        }
-	}
-	Sleep(1000);
-
-	if(subFolBool == 0)//if you want a sub folder
-	{
-		std::string subFolder =  getPathFromKeyboard();
-		std::string stringMountLocation = storageDevice + subFolder;
-		mountLocation = const_cast<char*>(stringMountLocation.c_str());
-	}
-	else
-	{
-		
 		mountLocation = const_cast<char*>(storageDevice.c_str());
 	}
 
-	
-	
 
-	if (!CheckGameMounted(storageDevice))//check if the folder even exists
-	{
-		return;
-	}
+	
 
 	write = fexists("game:\\updflash.bin");
+	dprintf("Welcome to Modded360nandflasher. a mod for Simple360nandflasher which adds folder choice option!\n\n");
 	
 	
 	
@@ -791,11 +877,13 @@ VOID __cdecl main()
 	if (!MMC)
 	{
 		dprintf(MSG_PRESS_X_TO_DUMP_RAWFLASH);
-		dprintf("\npress select to use network beta\n");
+		
 	}
 	else
 		dprintf(MSG_PRESS_X_TO_DUMP_RAWFLASH4G);
+
 	dprintf(MSG_PRESS_ANY_OTHER_BUTTON_TO_EXIT);
+	dprintf("\npress select to use network beta\n");
 	
 	for(;;)
 	{

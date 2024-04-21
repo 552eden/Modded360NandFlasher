@@ -14,3 +14,6 @@ Current limitations: folder can be either root of a drive, or one folder deep
 feedback would be appreciated (as well as pull requests)
 
 MD5 calculation thanks to: https://create.stephan-brumme.com/hash-library/ (MD5.h and MD5.cpp)
+
+requires:
+.NET Desktop Runtime 6: https://dotnet.microsoft.com/en-us/download/dotnet/6.0
