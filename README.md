@@ -3,7 +3,7 @@ This is a mod of "Simple 360 Nand Flasher" by Swizzy - Original code can be foun
 this mod's goals are to add an option to pick where to read or wtire the nand files from\to
 
 
-https://github.com/552eden/Modded360NandFlaher/releases/tag/pre-release 
+https://github.com/552eden/Modded360NandFlasher/releases
 
 Buy me a Coffee: https://ko-fi.com/552eden
 
