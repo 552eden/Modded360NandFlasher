@@ -2,6 +2,8 @@
 <xex>
   <privilege id="0"/>
   <privilege id="5"/>
+  <privilege id="6"/>
+  <!-- InsecureSockets -->
   <format>
 	<compressed/>
   </format>

@@ -954,13 +954,15 @@ VOID __cdecl main()
 			else if ((m_pGamepad->wPressedButtons & XINPUT_GAMEPAD_BACK) && (!dumped)) //network func button
 			{
 				dprintf("network beta activated \n");
-
+				
 				//disable secure network settings. long live unsecure connections!
 				XNetStartupParams xnsp;
 				memset( &xnsp, 0, sizeof( xnsp ) );
 				xnsp.cfgSizeOfStruct = sizeof( XNetStartupParams );
 				xnsp.cfgFlags = XNET_STARTUP_BYPASS_SECURITY;
 				INT err = XNetStartup( &xnsp );
+
+				dprintf("\n xneterror: %d\n", err);
 				std::string ipStr = getIPFromKeyboard();
 				serverIp = const_cast<char*>(ipStr.c_str());
 				//dprintf("\n server IP is: ", serverIp, "\n");
@@ -983,7 +985,7 @@ VOID __cdecl main()
 				{
 					dprintf("Socket created successfully!\n");
 				}
-
+				
 				// Connect to the server
 				SOCKADDR_IN target;
 				target.sin_family = AF_INET;
