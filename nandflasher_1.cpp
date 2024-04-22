@@ -961,8 +961,6 @@ VOID __cdecl main()
 				xnsp.cfgSizeOfStruct = sizeof( XNetStartupParams );
 				xnsp.cfgFlags = XNET_STARTUP_BYPASS_SECURITY;
 				INT err = XNetStartup( &xnsp );
-
-				dprintf("\n xneterror: %d\n", err);
 				std::string ipStr = getIPFromKeyboard();
 				serverIp = const_cast<char*>(ipStr.c_str());
 				//dprintf("\n server IP is: ", serverIp, "\n");
@@ -985,7 +983,9 @@ VOID __cdecl main()
 				{
 					dprintf("Socket created successfully!\n");
 				}
-				
+				BOOL opt_true = TRUE;
+				setsockopt(sock, SOL_SOCKET, 0x5801, (PCSTR)&opt_true, sizeof(BOOL));
+
 				// Connect to the server
 				SOCKADDR_IN target;
 				target.sin_family = AF_INET;
@@ -993,17 +993,20 @@ VOID __cdecl main()
 				target.sin_addr.s_addr = inet_addr(serverIp);
 				result = connect(sock, (SOCKADDR*)&target, sizeof(target));
 				if (result == SOCKET_ERROR) {
-					printf("connect failed with error: %d\n", WSAGetLastError());
+					if (WSAGetLastError() == 10060)
+						dprintf("Connection timed out");
+					else
+						dprintf("connect failed with error: %d\n", WSAGetLastError());
 					closesocket(sock);
 					WSACleanup();
 					//return 1;
 				}
 				else
 				{
-					dprintf("Connected to PC server!\n");
+					dprintf("Connected to server %s:%d\n", serverIp, SERVER_PORT);
 				}
 
-				printf("Connected to server %s:%d\n", serverIp, SERVER_PORT);
+				
 
 				// Send the name of the binary file to receive
 				result = send(sock, SENTFILENAME, strlen(SENTFILENAME), 0);
@@ -1016,7 +1019,15 @@ VOID __cdecl main()
 
 				// Receive the expected file size
 				char sizeBuffer[1024];
-				result = recv(sock, sizeBuffer, 1024, 0);
+				try
+				{
+					result = recv(sock, sizeBuffer, 1024, 0);
+				}
+				catch (const std::exception& e)
+				{
+					dprintf("exception caught");
+				} // will be executed if f() throws std::runtime_error
+				
 				//dprintf("recieved file size from server is:",result);
 				if (result == SOCKET_ERROR) {
 					printf("recv failed with error: %d\n", WSAGetLastError());
@@ -1037,7 +1048,7 @@ VOID __cdecl main()
 					//return 1;
 				}
 
-				// Receive the file and compute the checksum
+				// Receive the file
 				char buffer[BUFFER_SIZE];
 				unsigned int checksum = 0;
 				int bytesRead;
@@ -1048,7 +1059,6 @@ VOID __cdecl main()
 						break;
 					}
 					outputFile.write(buffer, bytesRead);
-					//checksum += computeChecksum(buffer, bytesRead);
 					totalBytesRead += bytesRead;
 
 					
@@ -1083,50 +1093,35 @@ VOID __cdecl main()
 						// Receive the expected file size
 						char stringBuffer[1024];
 						result = recv(sock, stringBuffer, 1024, 0);
-						//dprintf("recieved file size from server is:",result);
+						dprintf("recieved file size from server is: %d\n",result);
 						if (result == SOCKET_ERROR) {
 							printf("recv failed with error: %d\n", WSAGetLastError());
 							closesocket(sock);
 							WSACleanup();
-							//return 1;
 						}
 						stringBuffer[result] = '\0';
 						long long expectedFileSize = _atoi64(stringBuffer);
+						
+						int strResult;
+							
 						printf("Expected file size: %lld\n", expectedFileSize);
 						dprintf("\n Received MD5:", stringBuffer);
 						dprintf(stringBuffer);
-
-						
-
-						int strResult = std::strcmp(stringBuffer, md5Hash.c_str());
-
+						strResult = std::strcmp(stringBuffer, md5Hash.c_str());
 						if (strResult == 0) {
 							dprintf("\nHashses are the same! you can continue with flashing\n");
-						} else {
+						}
+						else {
 							dprintf("\nHash Mismatch ***DO NOT FLASH FILE***\n");
 						}
-
-						
-							
 
 					}
 				}
 
-				
-
-
-				// Close the file, socket and cleanup WinsockX
-			
-
+				// Close the socket and cleanup WinsockX
 				closesocket(sock);
 				WSACleanup();
-				dprintf("\n network func completed!!\n");
-				dprintf("network func completed!!\n");
-				dprintf("network func completed!!\n");
-				dprintf("network func completed!!\n");
-
-
-				
+				dprintf("\n network func completed!!\n");				
 			}
 
 
