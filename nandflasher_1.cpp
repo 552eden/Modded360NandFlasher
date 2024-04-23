@@ -21,7 +21,7 @@
 #include <vector>
 #include <cstring>
 #include "md5.h"
-
+#include <sys/stat.h>
 #include <fstream>
 extern "C" {
 #include "xenon_sfcx.h"
@@ -42,8 +42,8 @@ extern "C" {
 
 #define SERVER_PORT 4343 // For pc server support
 #define FILENAME "game:\\flashdmp.bin"
-#define SENTFILENAME "game:\\updflash.bin"
-#define RECIEVEDFILENAME "flashdmp.bin"
+#define RECIEVEDFILENAME "game:\\updflash.bin"
+#define SENTFILENAME "game:\\flashdmp.bin"
 #define BUFFER_SIZE 4096
 #define __BYTE_ORDER __BIG_ENDIAN
 
@@ -660,7 +660,7 @@ int recieveFileToFlash(SOCKET sock)
 
 	int result;
 	// Send the name of the binary file to receive
-	result = send(sock, SENTFILENAME, strlen(SENTFILENAME), 0);
+	result = send(sock, RECIEVEDFILENAME, strlen(RECIEVEDFILENAME), 0);
 	if (result == SOCKET_ERROR) {
 		printf("send failed with error: %d\n", WSAGetLastError());
 		closesocket(sock);
@@ -691,9 +691,9 @@ int recieveFileToFlash(SOCKET sock)
 	printf("Expected file size: %lld\n", expectedFileSize);
 
 	// Open the file for writing
-	std::ofstream outputFile(SENTFILENAME, std::ios::out | std::ios::binary);
+	std::ofstream outputFile(RECIEVEDFILENAME, std::ios::out | std::ios::binary);
 	if (!outputFile.is_open()) {
-		dprintf("Failed to create file %s\n", SENTFILENAME);
+		dprintf("Failed to create file %s\n", RECIEVEDFILENAME);
 		closesocket(sock);
 		WSACleanup();
 		//return 1;
@@ -742,7 +742,7 @@ int recieveFileToFlash(SOCKET sock)
 
 			if (recievedFileSize > 0)
 			{
-				std::string filePath = SENTFILENAME; //moved this after the function to make sure were not checking md5 of an empty file
+				std::string filePath = RECIEVEDFILENAME; //moved this after the function to make sure were not checking md5 of an empty file
 				std::string md5Hash = calculateMD5(filePath);
 				if (!md5Hash.empty())
 				{
@@ -787,6 +787,157 @@ int recieveFileToFlash(SOCKET sock)
 	WSACleanup();
 	dprintf("\n network func completed!!\n");	
 	return 1;
+}
+
+int sendFlashedFile(SOCKET sock, char *flashdmp)
+{
+	
+
+	int recievedFileSize = 0;
+
+	int result;
+	// Send the name of the binary file to receive so the pc knows its gonna recieve a file
+	result = send(sock, flashdmp, strlen(flashdmp), 0);
+	if (result == SOCKET_ERROR) {
+		printf("send failed with error: %d\n", WSAGetLastError());
+		closesocket(sock);
+		WSACleanup();
+		//return 1;
+	}
+
+	/*
+	// Send the expected file size
+	char sizeBuffer[1024];
+	try
+	{
+		result = send(sock, flashdmp, strlen(flashdmp), 0); //change this to send the file size!!
+	}
+	catch (const std::exception& e)
+	{
+		dprintf("exception caught");
+	} // will be executed if f() throws std::runtime_error
+				
+	//dprintf("recieved file size from server is:",result);
+	if (result == SOCKET_ERROR) {
+		printf("recv failed with error: %d\n", WSAGetLastError());
+		closesocket(sock);
+		WSACleanup();
+		//return 1;
+	}
+	sizeBuffer[result] = '\0';
+	long long expectedFileSize = _atoi64(sizeBuffer);
+	printf("Expected file size: %lld\n", expectedFileSize);
+	*/
+
+
+	//open file
+	FILE * fd;
+	struct __stat64 s;
+	int size;
+	if (fopen_s(&fd, flashdmp, "rb") != 0)
+	{
+		dprintf(MSG_FILE_NOT_FOUND, flashdmp);
+		closesocket(sock);
+		WSACleanup();
+		return 0;
+	}
+
+	//calculate file size
+	_stat64(flashdmp, &s);
+	size = (int)(s.st_size&0xFFFFFFFF);
+
+	// Define the start message
+    const char* startMessage = "START_TRANSMISSION";
+
+    // Wait for the start message
+    char receivedMessage[256]; // Adjust the buffer size as needed
+    int bytesReceived;
+    do {
+        bytesReceived = recv(sock, receivedMessage, sizeof(receivedMessage), 0);
+        if (bytesReceived > 0 && memcmp(receivedMessage, startMessage, strlen(startMessage)) == 0) {
+            // Start message received, break out of the loop
+            break;
+        }
+    } while (bytesReceived > 0);
+
+
+	 	
+	// Convert file size to network byte order
+    int filesize_network = htonl(size);
+
+
+
+
+
+
+    
+    // Send file size
+    if (send(sock, (const char*)&filesize_network, sizeof(filesize_network), 0) != sizeof(filesize_network)) {
+        dprintf("\n error sending file size");
+		closesocket(sock);
+		WSACleanup();
+		return 0;
+    }
+
+	//calculate md5 of file
+	std::string filePath = flashdmp; //moved this after the function to make sure were not checking md5 of an empty file
+	std::string md5Hash = calculateMD5(filePath);
+	if (!md5Hash.empty())
+	{
+		dprintf("MD5 Hash: %s\n", md5Hash.c_str());
+	}
+	else
+	{
+		dprintf("\n error calculating md5");
+		closesocket(sock);
+		WSACleanup();
+		return 0;
+	}
+
+	 // Send md5 length
+    int md5_length = md5Hash.length();
+    if (send(sock, (const char*)&md5_length, sizeof(md5_length), 0) != sizeof(md5_length)) {
+        dprintf("\n error sending md5 length");
+		closesocket(sock);
+		WSACleanup();
+		return 0;
+    }
+    
+    // Send md5
+    if (send(sock, md5Hash.c_str(), md5_length, 0) != md5_length) {
+        dprintf("\n error sending md5");
+		closesocket(sock);
+		WSACleanup();
+		return 0;
+    }
+
+
+	// Send the file in chunks
+    char buffer[1024];
+    size_t bytesRead;
+    while ((bytesRead = fread(buffer, 1, sizeof(buffer), fd)) > 0) {
+        if (send(sock, buffer, bytesRead, 0) != bytesRead) {
+            dprintf("error sending file");
+			closesocket(sock);
+			WSACleanup();
+			return 0;
+        }
+    }
+
+	// Clean up
+    fclose(fd);
+	dprintf("completed send file function");
+	closesocket(sock);
+	WSACleanup();
+	return 1;
+		
+
+
+		
+			
+			
+
+	
 }
 
 SOCKET connectToServer()
@@ -1192,6 +1343,25 @@ VOID __cdecl main()
 				}
 				if (recievedSuccess == 1)
 					dprintf("\n successfully recieved file \n");
+			}
+
+			else if ((m_pGamepad->wPressedButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) && (!dumped)) //send flashdmp.bin to PC
+			{
+				int sentSuccess = 0;
+				SOCKET sock;
+				try
+				{
+					sock = connectToServer();
+					if (sockResult != SOCKET_ERROR) {
+						sentSuccess= sendFlashedFile(sock, SENTFILENAME);
+					}
+				}
+				catch (const std::exception& e)
+				{
+					dprintf("exception caught");
+				}
+				if (sentSuccess == 1)
+					dprintf("\n successfully sent file \n");
 			}
 
 
