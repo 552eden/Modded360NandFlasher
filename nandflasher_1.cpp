@@ -42,11 +42,12 @@ extern "C" {
 
 #define SERVER_PORT 4343 // For pc server support
 #define FILENAME "game:\\flashdmp.bin"
-#define SENTFILENAME "flashdmp.bin"
+#define SENTFILENAME "game:\\updflash.bin"
+#define RECIEVEDFILENAME "flashdmp.bin"
 #define BUFFER_SIZE 4096
 #define __BYTE_ORDER __BIG_ENDIAN
 
-
+char* dumpedFileName;
 extern "C" NTSTATUS XeKeysGetKey(WORD KeyId, PVOID KeyBuffer, PDWORD keyLength);
 
 ATG::GAMEPAD*	m_pGamepad; // Gamepad for input
@@ -92,6 +93,8 @@ PMESSAGEBOX_RESULT result = new MESSAGEBOX_RESULT();
 char* subFolderChar;
 char* mountLocation;
 char* serverIp;
+
+int sockResult;
 //char* subFolder = "";
 //char* mountLocation = "\\Device\\Harddisk0\\Partition1\\";
 
@@ -649,6 +652,204 @@ VOID ShowMessageBoxUIModActivation()//shows mod activation message box
 // Default port to connect to on the server
 const int kDefaultServerPort = 4242;
 
+int recieveFileToFlash(SOCKET sock)
+{
+	
+
+	int recievedFileSize = 0;
+
+	int result;
+	// Send the name of the binary file to receive
+	result = send(sock, SENTFILENAME, strlen(SENTFILENAME), 0);
+	if (result == SOCKET_ERROR) {
+		printf("send failed with error: %d\n", WSAGetLastError());
+		closesocket(sock);
+		WSACleanup();
+		//return 1;
+	}
+
+	// Receive the expected file size
+	char sizeBuffer[1024];
+	try
+	{
+		result = recv(sock, sizeBuffer, 1024, 0);
+	}
+	catch (const std::exception& e)
+	{
+		dprintf("exception caught");
+	} // will be executed if f() throws std::runtime_error
+				
+	//dprintf("recieved file size from server is:",result);
+	if (result == SOCKET_ERROR) {
+		printf("recv failed with error: %d\n", WSAGetLastError());
+		closesocket(sock);
+		WSACleanup();
+		//return 1;
+	}
+	sizeBuffer[result] = '\0';
+	long long expectedFileSize = _atoi64(sizeBuffer);
+	printf("Expected file size: %lld\n", expectedFileSize);
+
+	// Open the file for writing
+	std::ofstream outputFile(SENTFILENAME, std::ios::out | std::ios::binary);
+	if (!outputFile.is_open()) {
+		dprintf("Failed to create file %s\n", SENTFILENAME);
+		closesocket(sock);
+		WSACleanup();
+		//return 1;
+	}
+
+	// Receive the file
+	char buffer[BUFFER_SIZE];
+	int bytesRead;
+	long long totalBytesRead = 0;
+	while (totalBytesRead < expectedFileSize) {
+		bytesRead = recv(sock, buffer, BUFFER_SIZE, 0);
+		if (bytesRead <= 0) {
+			break;
+		}
+		outputFile.write(buffer, bytesRead);
+		totalBytesRead += bytesRead;
+
+					
+
+	}
+
+	// Check for errors
+	if (bytesRead == SOCKET_ERROR) {
+		printf("recv failed with error: %d\n", WSAGetLastError());
+
+	}
+	else {
+		
+					
+		if (expectedFileSize != totalBytesRead) {
+			printf("Received file size %lld is different from expected file size %lld\n", totalBytesRead, expectedFileSize);
+		}
+		else {
+			outputFile.close();
+			
+			// Receive the expected file size
+			char stringBuffer[1024];
+			result = recv(sock, stringBuffer, 1024, 0);
+			dprintf("recieved file size from server is: %d\n",result);
+			recievedFileSize = result;
+			if (result == SOCKET_ERROR) {
+				printf("recv failed with error: %d\n", WSAGetLastError());
+				closesocket(sock);
+				WSACleanup();
+			}
+
+			if (recievedFileSize > 0)
+			{
+				std::string filePath = SENTFILENAME; //moved this after the function to make sure were not checking md5 of an empty file
+				std::string md5Hash = calculateMD5(filePath);
+				if (!md5Hash.empty())
+				{
+					dprintf("MD5 Hash: %s\n", md5Hash.c_str());
+				}
+				else
+				{
+					dprintf("\n error calculating md5");
+				}
+				stringBuffer[result] = '\0';
+				long long expectedFileSize = _atoi64(stringBuffer);
+						
+				int strResult;
+							
+				printf("Expected file size: %lld\n", expectedFileSize);
+				dprintf("\n Received MD5:", stringBuffer);
+				dprintf(stringBuffer);
+				strResult = std::strcmp(stringBuffer, md5Hash.c_str());
+				if (strResult == 0) {
+					dprintf("\nHashses are the same! you can continue with flashing\n");
+				}
+				else {
+					dprintf("\nHash Mismatch ***DO NOT FLASH FILE***\n");
+				}
+			}
+			else
+			{
+				dprintf("\n didnt recieve any file! aborting \n");
+				// Close the socket and cleanup WinsockX
+				closesocket(sock);
+				WSACleanup();
+				return 0;
+			}
+			
+			
+
+		}
+	}
+
+	// Close the socket and cleanup WinsockX
+	closesocket(sock);
+	WSACleanup();
+	dprintf("\n network func completed!!\n");	
+	return 1;
+}
+
+SOCKET connectToServer()
+{
+	dprintf("network beta activated \n");
+				
+	//disable secure network settings. long live unsecure connections!
+	
+	XNetStartupParams xnsp;
+	memset( &xnsp, 0, sizeof( xnsp ) );
+	xnsp.cfgSizeOfStruct = sizeof( XNetStartupParams );
+	xnsp.cfgFlags = XNET_STARTUP_BYPASS_SECURITY;
+	INT err = XNetStartup( &xnsp );
+	std::string ipStr = getIPFromKeyboard();
+	serverIp = const_cast<char*>(ipStr.c_str());
+	//dprintf("\n server IP is: ", serverIp, "\n");
+	// Initialize WinsockX
+	WSADATA wsaData;
+	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (result != 0) {
+		printf("WSAStartup failed with error: %d\n", result);
+		//return 1;
+	}
+
+	// Create a socket
+	SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (sock == INVALID_SOCKET) {
+		dprintf("socket creation failed with error: %d\n", WSAGetLastError());
+		WSACleanup();
+		//return 1;
+	}
+	else
+	{
+		dprintf("Socket created successfully!\n");
+	}
+	BOOL opt_true = TRUE;
+	setsockopt(sock, SOL_SOCKET, 0x5801, (PCSTR)&opt_true, sizeof(BOOL));
+
+	// Connect to the server
+	SOCKADDR_IN target;
+	target.sin_family = AF_INET;
+	target.sin_port = htons(SERVER_PORT);
+	target.sin_addr.s_addr = inet_addr(serverIp);
+	result = connect(sock, (SOCKADDR*)&target, sizeof(target));
+	if (result == SOCKET_ERROR) {
+		if (WSAGetLastError() == 10060)
+			dprintf("Connection timed out");
+		else
+			dprintf("connect failed with error: %d\n", WSAGetLastError());
+		closesocket(sock);
+		WSACleanup();
+		sockResult = result;
+		return sock;
+		//return 1;
+	}
+	else
+	{
+		dprintf("Connected to server %s:%d\n", serverIp, SERVER_PORT);
+		sockResult = result;
+		return sock;
+	}
+}
+
 //---------------------- end network functionality ---------------
 
 //--------------------------------------------------------------------------------------
@@ -883,7 +1084,8 @@ VOID __cdecl main()
 		dprintf(MSG_PRESS_X_TO_DUMP_RAWFLASH4G);
 
 	dprintf(MSG_PRESS_ANY_OTHER_BUTTON_TO_EXIT);
-	dprintf("\npress select to use network beta\n");
+	dprintf("\npress LB to use recieve file from PC\n");
+	dprintf("\npress RB to use send file to PC\n");
 	
 	for(;;)
 	{
@@ -924,8 +1126,17 @@ VOID __cdecl main()
 			}
 			else if ((m_pGamepad->wPressedButtons & XINPUT_GAMEPAD_X) && (!dumped))
 			{
-				if (!fexists("game:\\flashdmp.bin"))
+				
+
+				char path[512];
+				std::string stringDumpedFile;
+				dumpedFileName = const_cast<char*>(stringDumpedFile.c_str());
+				if (!fexists("game:\\flashdmp.bin")){
+					sprintf_s(path, 512, "game:\\flashdmp.bin");
+					stringDumpedFile = path;
+					dumpedFileName = const_cast<char*>(stringDumpedFile.c_str());
 					dumper("game:\\flashdmp.bin");
+				}
 				else
 				{
 					dprintf(MSG_PRESS_START_TO_OVERWRITE_EXISTING_FILE, "game:\\flashdmp.bin");
@@ -936,192 +1147,51 @@ VOID __cdecl main()
 						m_pGamepad = ATG::Input::GetMergedInput();
 						if (m_pGamepad->wPressedButtons & XINPUT_GAMEPAD_START)
 						{
+							sprintf_s(path, 512, "game:\\flashdmp.bin");
+							stringDumpedFile = path;
+							dumpedFileName = const_cast<char*>(stringDumpedFile.c_str());
 							dumper("game:\\flashdmp.bin");
 							break;
 						}
 						else if ((m_pGamepad->wPressedButtons & XINPUT_GAMEPAD_B) && (GotSerial))
 						{
 							char path[512];
-							sprintf_s(path, 512, "game:\\flashdmp_%s.bin", consoleSerial);							
+							sprintf_s(path, 512, "game:\\flashdmp_%s.bin", consoleSerial);
+							stringDumpedFile = path;
+							dumpedFileName = const_cast<char*>(stringDumpedFile.c_str());
 							dumper(path);
+							//dprintf("\ndumped path: ");
+							//dprintf("%s\n", path);
+							//dprintf("\n");
 							break;
 						}
 					}
 				}
+				dprintf("\ndumped path: ");
+				dprintf("%s\n", dumpedFileName);
+				dprintf("\n");
 				dprintf(MSG_PRESS_ANY_BUTTON_TO_EXIT);
-				dprintf("\npress select to use network beta\n");
+
+				// SENND FILE TO PC: dumpedFileName;
+				//dprintf("\npress LB to use network beta\n"); dosent run?
 			}
-			else if ((m_pGamepad->wPressedButtons & XINPUT_GAMEPAD_BACK) && (!dumped)) //network func button
+			else if ((m_pGamepad->wPressedButtons & XINPUT_GAMEPAD_LEFT_SHOULDER) && (!dumped)) //recieve updflash.bin from PC
 			{
-				dprintf("network beta activated \n");
-				
-				//disable secure network settings. long live unsecure connections!
-				XNetStartupParams xnsp;
-				memset( &xnsp, 0, sizeof( xnsp ) );
-				xnsp.cfgSizeOfStruct = sizeof( XNetStartupParams );
-				xnsp.cfgFlags = XNET_STARTUP_BYPASS_SECURITY;
-				INT err = XNetStartup( &xnsp );
-				std::string ipStr = getIPFromKeyboard();
-				serverIp = const_cast<char*>(ipStr.c_str());
-				//dprintf("\n server IP is: ", serverIp, "\n");
-				// Initialize WinsockX
-				WSADATA wsaData;
-				int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
-				if (result != 0) {
-					printf("WSAStartup failed with error: %d\n", result);
-					//return 1;
-				}
-
-				// Create a socket
-				SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-				if (sock == INVALID_SOCKET) {
-					dprintf("socket creation failed with error: %d\n", WSAGetLastError());
-					WSACleanup();
-					//return 1;
-				}
-				else
-				{
-					dprintf("Socket created successfully!\n");
-				}
-				BOOL opt_true = TRUE;
-				setsockopt(sock, SOL_SOCKET, 0x5801, (PCSTR)&opt_true, sizeof(BOOL));
-
-				// Connect to the server
-				SOCKADDR_IN target;
-				target.sin_family = AF_INET;
-				target.sin_port = htons(SERVER_PORT);
-				target.sin_addr.s_addr = inet_addr(serverIp);
-				result = connect(sock, (SOCKADDR*)&target, sizeof(target));
-				if (result == SOCKET_ERROR) {
-					if (WSAGetLastError() == 10060)
-						dprintf("Connection timed out");
-					else
-						dprintf("connect failed with error: %d\n", WSAGetLastError());
-					closesocket(sock);
-					WSACleanup();
-					//return 1;
-				}
-				else
-				{
-					dprintf("Connected to server %s:%d\n", serverIp, SERVER_PORT);
-				}
-
-				
-
-				// Send the name of the binary file to receive
-				result = send(sock, SENTFILENAME, strlen(SENTFILENAME), 0);
-				if (result == SOCKET_ERROR) {
-					printf("send failed with error: %d\n", WSAGetLastError());
-					closesocket(sock);
-					WSACleanup();
-					//return 1;
-				}
-
-				// Receive the expected file size
-				char sizeBuffer[1024];
+				int recievedSuccess = 0;
+				SOCKET sock;
 				try
 				{
-					result = recv(sock, sizeBuffer, 1024, 0);
+					sock = connectToServer();
+					if (sockResult != SOCKET_ERROR) {
+						recievedSuccess = recieveFileToFlash(sock);
+					}
 				}
 				catch (const std::exception& e)
 				{
 					dprintf("exception caught");
-				} // will be executed if f() throws std::runtime_error
-				
-				//dprintf("recieved file size from server is:",result);
-				if (result == SOCKET_ERROR) {
-					printf("recv failed with error: %d\n", WSAGetLastError());
-					closesocket(sock);
-					WSACleanup();
-					//return 1;
 				}
-				sizeBuffer[result] = '\0';
-				long long expectedFileSize = _atoi64(sizeBuffer);
-				printf("Expected file size: %lld\n", expectedFileSize);
-
-				// Open the file for writing
-				std::ofstream outputFile(FILENAME, std::ios::out | std::ios::binary);
-				if (!outputFile.is_open()) {
-					dprintf("Failed to create file %s\n", FILENAME);
-					closesocket(sock);
-					WSACleanup();
-					//return 1;
-				}
-
-				// Receive the file
-				char buffer[BUFFER_SIZE];
-				unsigned int checksum = 0;
-				int bytesRead;
-				long long totalBytesRead = 0;
-				while (totalBytesRead < expectedFileSize) {
-					bytesRead = recv(sock, buffer, BUFFER_SIZE, 0);
-					if (bytesRead <= 0) {
-						break;
-					}
-					outputFile.write(buffer, bytesRead);
-					totalBytesRead += bytesRead;
-
-					
-
-				}
-
-				// Check for errors
-				if (bytesRead == SOCKET_ERROR) {
-					printf("recv failed with error: %d\n", WSAGetLastError());
-
-				}
-				else {
-					dprintf("\nFile received successfully\n");
-					dprintf("File received successfully\n");
-					dprintf("File received successfully\n");
-					
-					if (expectedFileSize != totalBytesRead) {
-						printf("Received file size %lld is different from expected file size %lld\n", totalBytesRead, expectedFileSize);
-					}
-					else {
-						outputFile.close();
-						std::string filePath = FILENAME;
-						std::string md5Hash = calculateMD5(filePath);
-						if (!md5Hash.empty())
-						{
-							dprintf("MD5 Hash: %s\n", md5Hash.c_str());
-						}
-						else
-						{
-							dprintf("\n error calculating md5");
-						}
-						// Receive the expected file size
-						char stringBuffer[1024];
-						result = recv(sock, stringBuffer, 1024, 0);
-						dprintf("recieved file size from server is: %d\n",result);
-						if (result == SOCKET_ERROR) {
-							printf("recv failed with error: %d\n", WSAGetLastError());
-							closesocket(sock);
-							WSACleanup();
-						}
-						stringBuffer[result] = '\0';
-						long long expectedFileSize = _atoi64(stringBuffer);
-						
-						int strResult;
-							
-						printf("Expected file size: %lld\n", expectedFileSize);
-						dprintf("\n Received MD5:", stringBuffer);
-						dprintf(stringBuffer);
-						strResult = std::strcmp(stringBuffer, md5Hash.c_str());
-						if (strResult == 0) {
-							dprintf("\nHashses are the same! you can continue with flashing\n");
-						}
-						else {
-							dprintf("\nHash Mismatch ***DO NOT FLASH FILE***\n");
-						}
-
-					}
-				}
-
-				// Close the socket and cleanup WinsockX
-				closesocket(sock);
-				WSACleanup();
-				dprintf("\n network func completed!!\n");				
+				if (recievedSuccess == 1)
+					dprintf("\n successfully recieved file \n");
 			}
 
 
